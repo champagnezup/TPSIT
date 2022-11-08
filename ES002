@@ -1,0 +1,84 @@
+//creare un file.csv con COGNOME, NOME, NASCITA (annomesegiorno in formato int)
+//scorrere il file con la funione FGETS e STRTOk
+//stampare in ordine DECRESCENTE(dal piu grande al piu piccolo) utilizzando i puntatori e allocazione dinamica(MALLOC)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+//creo la struttura
+typedef struct{
+    char* cognome;
+    char* nome;
+    int nascita;
+}dati;
+
+//determino la dimensione del file
+int fsize(FILE *fp){
+    int prev=ftell(fp);
+    fseek(fp, 0L, SEEK_END);
+    int sz=ftell(fp);
+    fseek(fp,prev,SEEK_SET);
+    return sz;
+}
+
+//ordino l'array di strutture in base alla data di nascita
+void ordinamento(int DIM, dati *a){
+    dati temp;
+    for (int k = 1; k < DIM; k++)
+    {
+        for (int j = 0; j < k; j++)
+        {
+            if ((a + k)->nascita < (a + j)->nascita)
+            {
+                temp = *(a + k);
+                *(a + k) = *(a + j);
+                *(a + j) = temp;
+            }
+        }
+    }
+}
+
+//visualizzo l'array di strutture ordinato
+void visualizzaclassifica(dati *a, int dim){
+    for(int k = 0; k < dim; k++){
+        printf("la posizione n.%d e': %d nome e cognome: %s %s", k + 1, (a + k)->nascita, (a + k)->nome, (a + k)->cognome);
+        printf("\n");
+    }
+}
+
+int main() {
+    dati *a;
+    FILE*fp;
+    char riga[1024];
+    fp = fopen("../dati.csv","r");
+    //controllo se il FILE sia stato aperto con successo
+    if(fp == NULL){
+        printf("WARNING!: Il file non esiste");
+        //termino l'esecuzione del programma
+        return 0;
+    }else{
+        int k = 0;
+        int n = fsize(fp);
+        //assegno la dimesione dell'array tramite la malloc
+        a = (dati*)malloc(n * sizeof(dati));
+        printf("\n");
+        //ciclo fino alla fine del file
+        while(fgets(riga, 1024, fp)){
+            (a + k)->nome = strdup(strtok(riga, ","));
+            (a + k)->cognome = strdup(strtok(NULL, ","));
+            (a + k)->nascita = atoi(strtok(NULL, ","));
+
+            printf("%s, %s, %d", (a + k)->nome, (a + k)->cognome, (a + k)->nascita);
+            printf("\n");
+            k++;
+        }
+        ordinamento(k, a);
+        printf("\n");
+        visualizzaclassifica(a, k);
+    }
+    printf("\n");
+    //libero lo spazio in memoria occupato dai puntatori
+    fclose(fp);
+    free(a);
+    return 0;
+}
