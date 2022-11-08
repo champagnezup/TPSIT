@@ -1,0 +1,164 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define LIMITE 1024
+#define SOMMADAVERSARE 2200
+#define SOMMAT 100
+
+typedef struct{
+    char *data;
+    char *cognome;
+    int versati;
+}datialunno;
+
+typedef struct{
+    char *cognome;
+    int quota;
+}alunno;
+
+int contarighe(){
+    FILE *fp;
+    int righe = 0;
+    char c[LIMITE];
+    char *riga = c;
+
+    fp = fopen("../4AROB_GITA.csv", "r");
+
+    if(fp == NULL){
+        printf("WARNING!: file non esistente\n");
+    }else{
+        while(fgets(riga, LIMITE, fp)){
+            righe++;
+        }
+    }
+    fclose(fp);
+
+    return righe;
+}
+
+
+void caricaDati(datialunno *a, int dim){
+    FILE *fp;
+    char *riga;
+    int k = 0;
+
+    fp = fopen("../4AROB_GITA.csv", "r");
+
+    while(fgets(riga, LIMITE, fp)){
+        (a + k)->data = (strtok(riga, ";"));
+        (a + k)->cognome = strdup(strtok(NULL, ";"));
+        (a + k)->versati = atoi(strtok(NULL, ";"));
+
+        //prova funzionamento
+        //printf("%s %d", (a + k)->cognome, (a + k)->versati);
+        //printf("\n");
+        k++;
+    }
+
+}
+
+void totIncassi(datialunno *a, int dim){
+    int sommatot = 0;
+    //scorro la struttura e trovo la somma totale versata
+    for(int k = 0; k < dim; k++){
+        sommatot = sommatot + (a + k)->versati;
+    }
+
+    //controllo la somma e stampo a video un messaggio in base al risultato
+    if(sommatot == SOMMADAVERSARE){
+        printf("l'importo sommato e' esatto\n");
+    }else if(sommatot > SOMMADAVERSARE){
+        printf("l'importo supera la somma necessaria di %d euro\n", (sommatot - SOMMADAVERSARE));
+    }else{
+        printf("l'importo e' inferiore alla somma necessaria di %d euro\n", (SOMMADAVERSARE - sommatot));
+    }
+}
+
+void ricercaNome(datialunno *a, int dim){
+    //creo la struttura nella quale inserisco i dati dell'alunno ricercato
+    alunno alunnoricercato;
+    alunnoricercato.quota = 0;
+
+    //chiedo il nome da ricercare
+    printf("inserire il cognome ricercato: ");
+    scanf("%s", alunnoricercato.cognome);
+    fflush(stdin);
+
+
+    //scanf("%s", alunnoricercato.cognome);
+    //printf("prova funzionamento");
+
+    //scorro la struttura
+    for(int k = 0; k < dim; k++){
+        //ogni volta che trovo il nome ricercato aggiungo all'interno della variabile contenente la quota dell'alunno la somma di denaro contenuta nella struttura
+        if(strcmp(alunnoricercato.cognome, (a+k)->cognome) == 0){
+            alunnoricercato.quota = alunnoricercato.quota + (a+k)->versati;
+            printf("trovato un versamento da %d\n", (a+k)->versati);
+        }
+    }
+
+    //stampo a video il nome e la quota versata dallo studente
+    printf("l'alunno %s ha versato %d", alunnoricercato.cognome, alunnoricercato.quota);
+    printf("\n");
+}
+
+
+bool controllonome(char *nomecontrollo, char nomianomali[], int posizione){
+    bool continua = false;
+    int k = 0;
+    //Controllo se il nome non sia gia uscito
+    while(continua == false && k < posizione){
+        if(strcmp(nomecontrollo, nomianomali[k]) == 0){
+            continua = true;
+        }
+        k++;
+    }
+
+    return continua;
+}
+
+
+void reportAnomalie(datialunno *a, int dim){
+    //creo una matrice di vettori che tiene conto dei nomi gia trovati
+    char nomianomali[LIMITE][dim];
+    //scorro la struttura
+    for(int k = 0; k < dim; k++){
+        //se la somma versata dallo studente e minore di quella da versare entra nella serie di if
+        if((a + k)->versati != SOMMAT){
+            //se e' la prima volta che entro assegno il nome e lo segnalo
+            if(k == 0){
+                strcpy(nomianomali[k], (a+k)->cognome);
+                printf("l'alunno %s e' da controllare (versati solo %d)", (a+k)->cognome, (a+k)->versati);
+                printf("\n");
+            //se non e' la prima volta controllo che non sia gia uscito in modo da non segnalarlo una seconda volta
+            }else if(controllonome((a+k)->cognome, nomianomali, k) == false){
+                strcpy(nomianomali[k], (a+k)->cognome);
+                printf("l'alunno %s e' da controllare (versati solo %d)", (a+k)->cognome, (a+k)->versati);
+                printf("\n");
+            }
+
+            printf("\n");
+        }
+    }
+}
+
+
+int main() {
+    datialunno *a;
+    int dim = contarighe();
+
+    if(dim == 0){
+        printf("WARNING!: impossibile calcolare la lunghezza del file\n");
+    }else{
+        a = (datialunno*)malloc(dim * sizeof(datialunno));
+        caricaDati(a, dim);
+        totIncassi(a, dim);
+        printf("prova funzionamento\n");
+        ricercaNome(a, dim);
+        reportAnomalie(a, dim);
+    }
+
+    return 0;
+}
