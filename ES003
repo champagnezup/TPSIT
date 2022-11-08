@@ -1,0 +1,21 @@
+#include <stdio.h>
+
+int main() {
+    int a[3] = {1,2,3};
+    int i;
+    int *p;
+    p=a;
+
+    for(i=0;i<3;i++){
+        printf("%d", a[i]);
+    }
+    //for incrementando il puntatore con una somma
+    for(i=0;i<3;i++){
+        printf("%d", *(a+i));
+    }
+    //for che cicla incrementando il puntatore direttamente
+    for(p=a;p<a+3;p++){
+        printf("%d", *p);
+    }
+    return 0;
+}
