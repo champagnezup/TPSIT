@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#define DIM 1024
+
+typedef struct gioco{
+
+    int rank;
+    char* name;
+    char* platform;
+    int year;
+    char* genre;
+    char* publisher;
+    float NA_sales;
+    float EU_sales;
+    float JP_sales;
+    float Other_sales;
+    float Global_sales;
+
+}gioco;
+
+int fsize(FILE *fp){
+    //assegna a prev la posizione del puntatore all'interno del file(in questo caso e' all'inizio)
+    int prev=ftell(fp);
+    //sposta la poszione del puntatore alla fine del file
+    fseek(fp, 0L, SEEK_END);
+    //assegna alla variabile sz la posizione del puntatore
+    int sz=ftell(fp);
+    //sposta la posizione del puntatore di nuovo all'inizio del file
+    fseek(fp,prev,SEEK_SET); 
+    //restituisce sz
+    return sz;
+}
+
+int main() {
+
+
+    gioco *a;
+    int k = 0;
+    int n;
+
+    char riga[DIM];
+    FILE*fp;
+    //apro il file in modalita' lettura
+    fp = fopen("/Users/zupy/Documents/Scuola/TPSIT/file.csv","r");
+    //controllo se il file esiste/e' stato aperto con sucesso
+    if(fp == NULL){
+        printf("WARNING!: Il file non esiste");
+        return 0;
+    }else{
+        //assegno ad n la funzione che determina la lunghezza del file
+        n = fsize(fp);
+        //assegno tramite la malloca la dimensione dell'array di strutture
+        a = (gioco*)malloc(n * sizeof(gioco));
+        //stampo a video un messaggio per comunicare l'essere entrato all'interno del FILE
+        printf("WARNING!: sono dentro");
+        //tolgo la prima riga che e' l'intestazione
+        fgets(riga, DIM, fp);
+        //ciclo fino alla fine del file
+        while(fgets(riga, DIM, fp) != EOF){
+
+            (a +k)->rank = atoi(strtok(riga, ","));
+            (a +k)->name = strtok(NULL, ",");
+            (a +k)->platform = strtok(NULL, ",");
+            (a +k)->year = atoi(strtok(NULL, ","));
+            (a +k)->genre = strtok(NULL, ",");
+            (a +k)->publisher = strtok(NULL, ",");
+            (a +k)->NA_sales = atof(strtok(NULL, ","));
+            (a +k)->EU_sales = atof(strtok(NULL, ","));
+            (a +k)->JP_sales = atof(strtok(NULL, ","));
+            (a +k)->Other_sales = atof(strtok(NULL, ","));
+            (a +k)->Global_sales = atof(strtok(NULL, ","));
+
+            printf("\n %d, %s, %s, %d, %s, %s, %.3f, %.3f, %.3f, %.3f, %.3f", (a +k)->rank, (a +k)->name, (a +k)->platform, (a +k)->year, (a +k)->genre, (a +k)->publisher, (a +k)->NA_sales, (a +k)->EU_sales, (a +k)->JP_sales, (a +k)->Other_sales, (a +k)->Global_sales);
+
+            k++;
+        }
+        //libero lo spazio in memoria occupato dall'array dinamico
+        free(n);
+        //libero lo spazio in memoria occupato dal puntatore del FILE
+        fclose(fp);
+    }
+    return 0;
+}
